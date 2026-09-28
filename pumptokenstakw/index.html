@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>PUMP / USDC — Staking & Token Dashboard</title>
+
+  <style>
+    :root {
+      --bg: #05070b;
+      --panel: rgba(15, 19, 29, .82);
+      --panel2: #101521;
+      --line: rgba(255,255,255,.08);
+      --text: #f6f8fb;
+      --muted: #8993a6;
+      --green: #42e695;
+      --cyan: #25d9ff;
+      --purple: #8b5cf6;
+      --red: #ff647c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37,217,255,.10), transparent 30%),
+        radial-gradient(circle at 90% 0%, rgba(139,92,246,.12), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .container {
+      width: min(1400px, 94%);
+      margin: auto;
+      padding: 20px 0 60px;
+    }
+
+    /* HEADER */
+
+    header {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      box-shadow: 0 0 30px rgba(37,217,255,.2);
+    }
+
+    .brand-icon span {
+      font-weight: 900;
+    }
+
+    nav {
+      display: flex;
+      gap: 5px;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    nav a:hover,
+    nav a.active {
+      color: white;
+      background: rgba(255,255,255,.06);
+    }
+
+    .connect {
+      background: rgba(66,230,149,.09);
+      border: 1px solid rgba(66,230,149,.25);
+      color: var(--green);
+      border-radius: 11px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    /* NOTICE */
+
+    .notice {
+      margin: 18px 0;
+      padding: 11px 14px;
+      border: 1px solid rgba(255,193,7,.15);
+      background: rgba(255,193,7,.045);
+      color: #cfc07c;
+      border-radius: 11px;
+      font-size: 11px;
+    }
+
+    /* TOKEN HEADER */
+
+    .token-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 25px 0 18px;
+    }
+
+    .token-title {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .token-logo {
+      width: 53px;
+      height: 53px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      background: linear-gradient(135deg, #42e695, #25d9ff);
+      color: #03100a;
+      box-shadow: 0 0 35px rgba(66,230,149,.2);
+    }
+
+    .token-title h1 {
+      font-size: 25px;
+    }
+
+    .token-title p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .live {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--green);
+      font-size: 11px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    /* STATS */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 13px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 19px;
+      backdrop-filter: blur(15px);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .stat-change {
+      margin-top: 5px;
+      color: var(--green);
+      font-size: 11px;
+    }
+
+    /* MAIN */
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.45fr .75fr;
+      gap: 17px;
+      margin-top: 17px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 21px;
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    /* CHART */
+
+    .chart-card {
+      padding: 25px;
+      min-height: 400px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-head h2 {
+      font-size: 16px;
+    }
+
+    .card-head span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .price-large {
+      font-size: 34px;
+      font-weight: 800;
+      margin-top: 13px;
+    }
+
+    .chart {
+      height: 240px;
+      margin-top: 30px;
+      display: flex;
+      align-items: end;
+      gap: 5px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .chart-bar {
+      flex: 1;
+      min-height: 5px;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(
+        to top,
+        rgba(37,217,255,.08),
+        rgba(66,230,149,.7)
+      );
+      animation: chart .7s ease both;
+    }
+
+    @keyframes chart {
+      from {
+        height: 0;
+      }
+    }
+
+    .chart-footer {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 12px;
+    }
+
+    /* PORTFOLIO */
+
+    .portfolio {
+      padding: 25px;
+    }
+
+    .demo-label {
+      color: #d7bd5c;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .portfolio-value {
+      font-size: 42px;
+      font-weight: 850;
+      margin: 14px 0 4px;
+      letter-spacing: -2px;
+    }
+
+    .portfolio-change {
+      color: var(--green);
+      font-size: 12px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 8px;
+      margin-top: 25px;
+    }
+
+    .action {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 5px;
+      background: rgba(255,255,255,.045);
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .action.primary {
+      background: var(--green);
+      color: #041008;
+      border-color: var(--green);
+    }
+
+    .action:hover {
+      transform: translateY(-1px);
+    }
+
+    /* REWARD */
+
+    .reward {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .reward-number {
+      font-size: 27px;
+      color: var(--cyan);
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .reward p {
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 5px;
+    }
+
+    .progress {
+      margin-top: 15px;
+      height: 6px;
+      background: rgba(255,255,255,.06);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      width: 78%;
+      height: 100%;
+      background: linear-gradient(90deg,var(--purple),var(--cyan));
+    }
+
+    /* BOTTOM */
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 17px;
+      margin-top: 17px;
+    }
+
+    .section {
+      padding: 24px;
+    }
+
+    /* HOLDERS */
+
+    .holder {
+      display: grid;
+      grid-template-columns: 35px 1fr 100px;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+
+    .holder:last-child {
+      border-bottom: 0;
+    }
+
+    .rank {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .address {
+      color: #c7ced9;
+      font-size: 11px;
+    }
+
+    .holder-balance {
+      text-align: right;
+      font-size: 11px;
+    }
+
+    /* CONTRACT */
+
+    .contract-box {
+      margin-top: 20px;
+      padding: 13px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .contract-box small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .contract {
+      color: #b9c2d0;
+      font-size: 10px;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .copy {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid rgba(37,217,255,.2);
+      color: var(--cyan);
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    /* MODAL */
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(8px);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-box {
+      width: min(410px,100%);
+      background: #111722;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 25px;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .close {
+      border: 0;
+      background: rgba(255,255,255,.07);
+      color: white;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+    }
+
+    .modal-box p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: white;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    .confirm {
+      width: 100%;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--green);
+      color: #031008;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    footer {
+      color: #596273;
+      text-align: center;
+      font-size: 10px;
+      margin-top: 25px;
+    }
+
+    @media(max-width: 900px) {
+      nav {
+        display: none;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .main-grid,
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width: 520px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stat-value {
+        font-size: 18px;
+      }
+
+      .token-header {
+        align-items: flex-start;
+      }
+
+      .portfolio-value {
+        font-size: 36px;
+      }
+    }
+
+    .wallet-status {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 10px;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .deposit-panel {
+      margin-top: 17px;
+      padding: 24px;
+    }
+
+    .deposit-address {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(37,217,255,.18);
+      background: rgba(37,217,255,.035);
+      border-radius: 12px;
+    }
+
+    .deposit-address small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .deposit-value {
+      color: #dce5f2;
+      font-size: 11px;
+      line-height: 1.55;
+      word-break: break-all;
+    }
+
+    .deposit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .deposit-actions button {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 9px 12px;
+      background: rgba(255,255,255,.045);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .deposit-actions .copy-deposit {
+      border-color: rgba(37,217,255,.25);
+      color: var(--cyan);
+    }
+
+    .reward-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--green);
+      font-size: 10px;
+    }
+
+    .reward-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+
+    .multiplier {
+      font-size: 30px;
+      font-weight: 850;
+      color: var(--cyan);
+      margin-top: 9px;
+    }
+
+    .holder-note {
+      color: var(--muted);
+      font-size: 9px;
+      margin-top: 7px;
+      line-height: 1.5;
+    }
+
+    @media(max-width: 520px) {
+      .deposit-actions {
+        flex-direction: column;
+      }
+    }
+
+
+    .login-page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      width: min(460px, 100%);
+      padding: 34px;
+      text-align: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 80px rgba(0,0,0,.35);
+    }
+
+    .login-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: #061017;
+      font-size: 27px;
+      font-weight: 900;
+      box-shadow: 0 0 40px rgba(37,217,255,.18);
+    }
+
+    .login-card h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .login-card > p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .wallet-input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 11px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.045);
+      color: white;
+      outline: none;
+      font-family: monospace;
+      font-size: 11px;
+      margin-bottom: 11px;
+    }
+
+    .wallet-input:focus {
+      border-color: rgba(37,217,255,.5);
+      box-shadow: 0 0 0 3px rgba(37,217,255,.07);
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--green);
+      color: #041008;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .login-error {
+      min-height: 17px;
+      margin-top: 11px;
+      color: var(--red);
+      font-size: 11px;
+    }
+
+    .login-hint {
+      color: #596273;
+      font-size: 9px;
+      margin-top: 18px;
+      line-height: 1.5;
+    }
+
+    #dashboardApp {
+      display: none;
+    }
+
+
+    .history-list {
+      margin-top: 15px;
+    }
+
+    .tx-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 110px 85px;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      font-size: 10px;
+    }
+
+    .tx-row:last-child {
+      border-bottom: 0;
+    }
+
+    .tx-date {
+      color: var(--muted);
+    }
+
+    .tx-wallet {
+      color: #c7ced9;
+      font-family: monospace;
+    }
+
+    .tx-amount {
+      text-align: right;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .tx-type {
+      text-align: right;
+      color: var(--cyan);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .demo-banner {
+      margin-top: 12px;
+      color: #d7bd5c;
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    @media(max-width: 700px) {
+      .tx-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+      }
+
+      .tx-amount,
+      .tx-type {
+        text-align: left;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+
+  <section class="login-page" id="loginPage">
+    <div class="login-card">
+      <div class="login-icon">P</div>
+      <h1>PUMP Dashboard</h1>
+      <p>Enter your authorized Solana wallet address to access the token dashboard.</p>
+
+      <input
+        class="wallet-input"
+        id="loginWallet"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Enter wallet address">
+
+      <button class="login-button" onclick="loginWithWallet()">
+        Continue to Dashboard
+      </button>
+
+      <div class="login-error" id="loginError"></div>
+
+      <div class="login-hint">
+        This page verifies the wallet address entered against the authorized
+        dashboard address. It does not request a seed phrase or private key.
+      </div>
+    </div>
+  </section>
+
+<div id="dashboardApp">
+<div class="container">
+
+  <header>
+
+    <div class="brand">
+      <div class="brand-icon">
+        <span>P</span>
+      </div>
+      PUMP
+    </div>
+
+    <nav>
+      <a href="#" class="active">Dashboard</a>
+      <a href="#">Markets</a>
+      <a href="#">Rewards</a>
+      <a href="#">Holders</a>
+    </nav>
+
+    <div style="text-align:right;">
+      <button class="connect" id="connectButton" onclick="showVerifiedWallet()">
+        Wallet Verified
+      </button>
+      <div class="wallet-status" id="walletStatus">Verified</div>
+    </div>
+
+  </header>
+
+
+  <div class="notice">
+    PORTFOLIO AND REWARDS RECORDS TO ONLY HOLDERS WHO STAKED. MARKET STATISTICS FROM LIVE TOKEN DATA.
+  </div>
+
+
+  <!-- TOKEN -->
+
+  <div class="token-header">
+
+    <div class="token-title">
+
+      <div class="token-logo">
+        P
+      </div>
+
+      <div>
+        <h1>PUMP / USDC</h1>
+        <p>Solana · Pump token analytics</p>
+      </div>
+
+    </div>
+
+    <div class="live">
+      <span class="live-dot"></span>
+      LIVE DATA
+    </div>
+
+  </div>
+
+
+  <!-- STATS -->
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="stat-label">Price</div>
+      <div class="stat-value" id="price">$0.002257</div>
+      <div class="stat-change" id="priceChange">
+        Live
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Market Cap</div>
+      <div class="stat-value" id="marketCap">
+        $2.26M
+      </div>
+      <div class="stat-change">Live</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">24H Volume</div>
+      <div class="stat-value" id="volume">
+        $324.96K
+      </div>
+      <div class="stat-change">24H</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Holders</div>
+      <div class="stat-value" id="holders">
+        —
+      </div>
+      <div class="stat-change">
+        Live
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- MAIN -->
+
+  <div class="main-grid">
+
+    <!-- CHART -->
+
+    <div class="card chart-card">
+
+      <div class="card-head">
+        <h2>PUMP / USDC</h2>
+        <span>Market price</span>
+      </div>
+
+      <div class="price-large" id="chartPrice">
+        $0.002257
+      </div>
+
+      <div class="chart" id="chart">
+
+        <span class="chart-bar" style="height:31%"></span>
+        <span class="chart-bar" style="height:43%"></span>
+        <span class="chart-bar" style="height:38%"></span>
+        <span class="chart-bar" style="height:51%"></span>
+        <span class="chart-bar" style="height:47%"></span>
+        <span class="chart-bar" style="height:62%"></span>
+        <span class="chart-bar" style="height:57%"></span>
+        <span class="chart-bar" style="height:71%"></span>
+        <span class="chart-bar" style="height:66%"></span>
+        <span class="chart-bar" style="height:79%"></span>
+        <span class="chart-bar" style="height:74%"></span>
+        <span class="chart-bar" style="height:88%"></span>
+
+      </div>
+
+      <div class="chart-footer">
+        <span>24H</span>
+        <span>12H</span>
+        <span>6H</span>
+        <span>1H</span>
+        <span>NOW</span>
+      </div>
+
+    </div>
+
+
+    <!-- PORTFOLIO -->
+
+    <div class="card portfolio">
+
+      <div class="card-head">
+        <div>
+          <h2>Portfolio</h2>
+          <div class="demo-label">TOTAL BALANCE </div>
+        </div>
+        <span>USDC</span>
+      </div>
+
+      <div class="portfolio-value">
+        $100,000.00
+      </div>
+
+      <div class="portfolio-change">
+        ↑ +2.84% today
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="action primary"
+          onclick="openModal('Deposit')">
+          Deposit
+        </button>
+
+        <button
+          class="action"
+          onclick="goToDeposit()">
+          Stake
+        </button>
+
+        <button
+          class="action"
+          onclick="openModal('Withdraw')">
+          Withdraw
+        </button>
+
+      </div>
+
+
+      <div class="reward">
+
+        <div class="card-head">
+          <h2>Daily Rewards</h2>
+          <span class="reward-live"><span class="reward-live-dot"></span> LIVE DISPLAY</span>
+        </div>
+
+        <div class="reward-number">
+          +<span id="reward">184.72</span> PUMP
+        </div>
+
+        <p>Reward accumulation display</p>
+
+        <div class="multiplier">
+          <span id="rewardMultiplier">1.00</span>x
+        </div>
+        <p>Daily reward multiplier</p>
+
+        <div class="progress">
+          <span></span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- DEPOSIT / STAKE -->
+  <div class="card deposit-panel" id="deposit">
+    <div class="card-head">
+      <div>
+        <h2>Deposit Tokens to Stake</h2>
+        <div class="demo-label">SEND PUMP TOKENS TO THE ADDRESS BELOW</div>
+      </div>
+      <span class="reward-live"><span class="reward-live-dot"></span> READY</span>
+    </div>
+
+    <div class="deposit-address">
+      <small>Deposit / Staking Wallet</small>
+      <div class="deposit-value" id="depositAddress">3PZa9ukFsatpDZRjtCLwNe4M65zhLzD6cEhNKeKVZWbz</div>
+      <div class="deposit-actions">
+        <button class="copy-deposit" onclick="copyDepositAddress()">Copy address</button>
+        <button onclick="showDepositNotice()">I've deposited</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+
+  <div class="bottom-grid">
+
+    <!-- HOLDERS -->
+
+    <div class="card section">
+
+      <div class="card-head">
+        <h2>Top Holders</h2>
+        <span>Live data</span>
+      </div>
+
+      <div id="holdersList"></div>
+      <div class="holder-note">
+        WALLET ADDRESSES OF HOLDER TOPS AND STAKERS ON THE PUMP COIN.(CONFIDENTIAL).
+        They are not live Solana holder records.
+      </div>
+
+    </div>
+
+
+    <!-- CONTRACT -->
+
+    <div class="card section">
+
+      <div class="card-head">
+        <h2>Token Information</h2>
+        <span>Solana</span>
+      </div>
+
+      <div class="contract-box">
+
+        <small>Contract / Mint Address</small>
+
+        <div class="contract">
+          9593dFjsLKKRAaz4LX1eK2DDEgrzfu3idb6yvMysD6A1
+        </div>
+
+        <button class="copy" onclick="copyContract()">
+          Copy address
+        </button>
+
+      </div>
+
+      <div class="contract-box">
+
+        <small>Trading Pair</small>
+
+        <div style="font-size:15px;font-weight:800;">
+          PUMP / USDC
+        </div>
+
+      </div>
+
+      <div class="contract-box">
+
+        <small>Network</small>
+
+        <div style="font-size:15px;font-weight:800;">
+          Solana
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- TRANSACTION HISTORY -->
+  <div class="card section" style="margin-top:17px;">
+    <div class="card-head">
+      <div>
+        <h2>Transaction History</h2>
+        <div class="demo-label">DAILY PUMP ADD-UPS</div>
+      </div>
+      <span>20 records</span>
+    </div>
+
+    <div class="history-list" id="transactionHistory"></div>
+
+    <div class="demo-banner">
+      
+    </div>
+  </div>
+
+  <footer>
+    PUMP dashboard · Market data should be independently verified before trading.
+  </footer>
+
+</div>
+
+
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+
+  <div class="modal-box">
+
+    <div class="modal-top">
+
+      <h3 id="modalTitle">
+        Deposit
+      </h3>
+
+      <button class="close" onclick="closeModal()">
+        ×
+      </button>
+
+    </div>
+
+    <p id="modalText">
+      Demo transaction interface.
+    </p>
+
+    <input
+      class="input"
+      id="amount"
+      type="number"
+      placeholder="Enter amount">
+
+    <button
+      class="confirm"
+      onclick="confirmDemo()">
+      Continue
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /*
+   ==========================================================
+   PUMP CONFIGURATION
+   ==========================================================
+  */
+
+  const AUTHORIZED_LOGIN_WALLET = "9ty6Cxxn82zpD1fEdermuYM4jN8wrNRjWhXC8541JG3W";
+
+  function loginWithWallet() {
+    const input = document.getElementById("loginWallet");
+    const error = document.getElementById("loginError");
+    const entered = input.value.trim();
+
+    if (!entered) {
+      error.textContent = "Please enter your wallet address.";
+      return;
+    }
+
+    if (entered !== AUTHORIZED_LOGIN_WALLET) {
+      error.textContent = "Wallet address not recognized. Please check the address.";
+      return;
+    }
+
+    error.textContent = "";
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("dashboardApp").style.display = "block";
+
+    const walletStatus = document.getElementById("walletStatus");
+    if (walletStatus) {
+      walletStatus.textContent =
+        AUTHORIZED_LOGIN_WALLET.slice(0, 6) + "..." +
+        AUTHORIZED_LOGIN_WALLET.slice(-6);
+    }
+
+    const connectButton = document.getElementById("connectButton");
+    if (connectButton) {
+      connectButton.textContent = "Wallet Verified";
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("loginWallet");
+    if (input) {
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") loginWithWallet();
+      });
+    }
+  });
+
+  const TOKEN = {
+
+    symbol: "PUMP",
+
+    pair: "PUMP/USDC",
+
+    network: "Solana",
+
+    mint:
+      "9593dFjsLKKRAaz4LX1eK2DDEgrzfu3idb6yvMysD6A1",
+
+    depositWallet:
+      "3PZa9ukFsatpDZRjtCLwNe4M65zhLzD6cEhNKeKVZWbz"
+
+  };
+
+
+  /*
+   ==========================================================
+   DEMO REWARDS
+   ==========================================================
+  */
+
+  let reward = 184.72;
+
+  setInterval(() => {
+
+    reward += 0.01;
+
+    document.getElementById("reward")
+      .textContent = reward.toFixed(2);
+
+  }, 3000);
+
+
+  /*
+   ==========================================================
+   MODALS
+   ==========================================================
+  */
+
+  function openModal(type) {
+
+    document
+      .getElementById("modal")
+      .classList.add("open");
+
+    document
+      .getElementById("modalTitle")
+      .textContent = type;
+
+    document
+      .getElementById("modalText")
+      .textContent =
+      `${type} is currently a demo action. No blockchain transaction will be sent.`;
+
+  }
+
+
+  function closeModal() {
+
+    document
+      .getElementById("modal")
+      .classList.remove("open");
+
+  }
+
+
+  function confirmDemo() {
+
+    const amount =
+      document.getElementById("amount").value;
+
+    if (!amount || Number(amount) <= 0) {
+
+      alert("Enter a demo amount.");
+
+      return;
+
+    }
+
+    alert(
+      "Demo transaction created for $" +
+      Number(amount).toLocaleString()
+    );
+
+    document.getElementById("amount").value = "";
+
+    closeModal();
+
+  }
+
+
+  /*
+   ==========================================================
+   COPY CONTRACT
+   ==========================================================
+  */
+
+  function copyContract() {
+
+    navigator.clipboard.writeText(TOKEN.mint);
+
+    alert("Contract address copied.");
+
+  }
+
+
+  /*
+   ==========================================================
+   WALLET
+   ==========================================================
+  */
+
+  function showVerifiedWallet() {
+    alert("Authorized wallet: " + AUTHORIZED_LOGIN_WALLET);
+  }
+
+
+  /*
+   ==========================================================
+   LIVE DATA ADAPTER
+   ==========================================================
+
+   Replace API_BASE with your backend/API endpoint.
+
+   IMPORTANT:
+   Don't expose a private API key directly in this
+   frontend. Put authenticated API requests behind
+   your own backend.
+  */
+
+  const API_BASE = "";
+
+
+  async function loadLiveData() {
+
+    /*
+      Example expected response:
+
+      {
+        price: 0.002257,
+        marketCap: 2260000,
+        volume24h: 324960,
+        holders: 30,
+        priceChange24h: 4.21
+      }
+    */
+
+    if (!API_BASE) {
+
+      console.log(
+        "Live API not connected yet."
+      );
+
+      return;
+
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          `${API_BASE}/token/${TOKEN.mint}`
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "API request failed"
+        );
+
+      }
+
+      const data =
+        await response.json();
+
+
+      updateTokenStats(data);
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Live token data error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  function updateTokenStats(data) {
+
+    if (data.price !== undefined) {
+
+      const price =
+        Number(data.price);
+
+      document.getElementById("price")
+        .textContent =
+        "$" + price.toFixed(8);
+
+      document.getElementById("chartPrice")
+        .textContent =
+        "$" + price.toFixed(8);
+
+    }
+
+
+    if (data.marketCap !== undefined) {
+
+      document.getElementById("marketCap")
+        .textContent =
+        formatMoney(data.marketCap);
+
+    }
+
+
+    if (data.volume24h !== undefined) {
+
+      document.getElementById("volume")
+        .textContent =
+        formatMoney(data.volume24h);
+
+    }
+
+
+    if (data.holders !== undefined) {
+
+      document.getElementById("holders")
+        .textContent =
+        Number(data.holders)
+          .toLocaleString();
+
+    }
+
+
+    if (data.priceChange24h !== undefined) {
+
+      const change =
+        Number(data.priceChange24h);
+
+      const element =
+        document.getElementById("priceChange");
+
+      element.textContent =
+        `${change >= 0 ? "+" : ""}${change.toFixed(2)}% 24H`;
+
+      element.style.color =
+        change >= 0
+          ? "var(--green)"
+          : "var(--red)";
+
+    }
+
+  }
+
+
+  function formatMoney(value) {
+
+    const number = Number(value);
+
+    if (number >= 1000000000) {
+
+      return "$" +
+        (number / 1000000000)
+          .toFixed(2) +
+        "B";
+
+    }
+
+    if (number >= 1000000) {
+
+      return "$" +
+        (number / 1000000)
+          .toFixed(2) +
+        "M";
+
+    }
+
+    if (number >= 1000) {
+
+      return "$" +
+        (number / 1000)
+          .toFixed(2) +
+        "K";
+
+    }
+
+    return "$" +
+      number.toFixed(2);
+
+  }
+
+
+  /*
+   ==========================================================
+   REFRESH
+   ==========================================================
+  */
+
+  loadLiveData();
+
+  setInterval(
+    loadLiveData,
+    30000
+  );
+
+
+  /*
+   ==========================================================
+   CLOSE MODAL
+   ==========================================================
+  */
+
+  document
+    .getElementById("modal")
+    .addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target.id === "modal"
+        ) {
+
+          closeModal();
+
+        }
+
+      }
+    );
+
+</script>
+
+</body>
+</html>
